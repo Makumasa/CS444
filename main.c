@@ -29,14 +29,14 @@ void sig_handler(int signal)
 
 void *producer(void *dummy)
 {
-        struct event e;
-        e.val = rand_uint();
-        e.wait = rand_uint_inclusive(2, 9);
         while (1) {
+                struct event e;
+                e.val = rand_uint();
+                e.wait = rand_uint_inclusive(2, 9);
                 pthread_mutex_lock(&mutex);
                 if (buffer->count < 32) {
                         buffer->events[buffer->count++] = e;
-                        printf("Added event %d to buffer.", e.val);
+                        printf("Added event %lu to buffer.\n", e.val);
                         pthread_mutex_unlock(&mutex);
                         sleep(rand_uint_inclusive(3, 7));
                 } else {
@@ -52,7 +52,7 @@ void *consumer(void *dummy)
                 pthread_mutex_lock(&mutex);
                 if (buffer->count > 0) {
                         struct event *e = &(buffer->events[--(buffer->count)]);
-                        printf("Consumed event %d.", e->val);
+                        printf("Consumed event %lu.\n", e->val);
                         int wait_time = e->wait;
                         pthread_mutex_unlock(&mutex);
                         sleep(wait_time);
@@ -65,24 +65,23 @@ void *consumer(void *dummy)
 
 int main(int argc, char **argv)
 {
+        rand_init();
+
         /* Ignore Ctrl+C until buffer is allocated */
-        struct sigaction action;
-        action.sa_handler = SIG_IGN;
-        sigfillset(&(action.sa_mask));
-        sigaction(SIGINT, &action, NULL);
+        signal(SIGINT, SIG_IGN);
 
         buffer = malloc(sizeof(*buffer));
         buffer->events = calloc(32, sizeof(struct event));
         buffer->count = 0;
 
         /* Now that the buffer has been allocated, Ctrl+C will free and exit */
-        action.sa_handler = &sig_handler;
+        signal(SIGINT, sig_handler);
 
         /* 
          * Use one producer and three consumers unless their number is specified
          * via command line
          */
-        int num_producers = 1;
+        int num_producers = 3;
         int num_consumers = 3;
         if (argc > 2) {
                 num_producers = atoi(argv[1]);
@@ -106,6 +105,8 @@ int main(int argc, char **argv)
                                consumer,
                                NULL);
         }
+
+        pause();
 
         return 0;
 }

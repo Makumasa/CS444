@@ -3,6 +3,11 @@
 #include "mt.h"
 #include "rand.h"
 
+void rand_init() 
+{
+        init_genrand(time(NULL));
+}
+
 unsigned long rand_uint()
 {
 	unsigned long eax;
@@ -24,7 +29,6 @@ unsigned long rand_uint()
 			: "=a"(rand)
 		);
 	} else {
-		init_genrand(time(NULL));
 		rand = genrand_int32();
 	}
 

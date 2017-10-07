@@ -3,13 +3,13 @@ CFLAGS  = -std=c99 -pthread
 SOURCES = main.c rand.c mt19937ar.c
 HEADERS = rand.h mt.h
 FILES   = $(SOURCES) $(HEADERS)
-OUTPUT  = assignment1
+OUTPUT  = ./build/assignment1
 
 release: $(FILES)
-	$(CC) -O2 -o $(OUTPUT) $(SOURCES)
+	$(CC) $(CFLAGS) -O2 -o $(OUTPUT) $(SOURCES)
 
 debug: $(FILES)
-	$(CC) -g -Wall -o $(OUTPUT) $(SOURCES)
+	$(CC) $(CFLAGS) -g -Wall -o $(OUTPUT) $(SOURCES)
 
 clean:
 	rm $(OUTPUT)

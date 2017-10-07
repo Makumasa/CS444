@@ -4,29 +4,20 @@
 #include <unistd.h>
 #include <signal.h>
 #include "rand.h"
+#include "eventqueue.h"
 
+#define BUFFER_SIZE           32
 #define DEFAULT_NUM_PRODUCERS 5
 #define DEFAULT_NUM_CONSUMERS 3
 
-struct event {
-        unsigned long val;
-        unsigned long wait;
-};
-
-struct event_buffer {
-        struct event *events;
-        int count;
-};
-
-struct event_buffer *buffer;
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+struct event_queue *buffer;
 
 void sig_handler(int signal)
 {
         perror("\nTerminating...\n");
         pthread_mutex_lock(&mutex);
-        free(buffer->events);
-        free(buffer);
+        delete_queue(buffer);
         exit(0);
 }
 
@@ -37,8 +28,8 @@ void *producer(void *dummy)
                 e.val = rand_uint();
                 e.wait = rand_uint_inclusive(2, 9);
                 pthread_mutex_lock(&mutex);
-                if (buffer->count < 32) {
-                        buffer->events[buffer->count++] = e;
+                if (!is_full(buffer)) {
+                        enqueue(buffer, e);
                         printf("Added event %lu to buffer.\n", e.val);
                         pthread_mutex_unlock(&mutex);
                         sleep(rand_uint_inclusive(3, 7));
@@ -53,12 +44,11 @@ void *consumer(void *dummy)
 {
         while (1) {
                 pthread_mutex_lock(&mutex);
-                if (buffer->count > 0) {
-                        struct event *e = &(buffer->events[--(buffer->count)]);
-                        printf("Consumed event %lu.\n", e->val);
-                        int wait_time = e->wait;
+                if (!is_empty(buffer)) {
+                        struct event e = dequeue(buffer);
+                        printf("Consumed event %lu.\n", e.val);
                         pthread_mutex_unlock(&mutex);
-                        sleep(wait_time);
+                        sleep(e.wait);
                 } else {
                         pthread_mutex_unlock(&mutex);
                         sleep(1);
@@ -68,14 +58,14 @@ void *consumer(void *dummy)
 
 int main(int argc, char **argv)
 {
-        rand_init();
-
         /* Ignore Ctrl+C until buffer is allocated */
         signal(SIGINT, SIG_IGN);
 
-        buffer = malloc(sizeof(*buffer));
-        buffer->events = calloc(32, sizeof(struct event));
-        buffer->count = 0;
+        /* Initialize random number generator */
+        rand_init();
+
+        /* Create the event buffer */
+        buffer = create_queue(BUFFER_SIZE);
 
         /* Now that the buffer has been allocated, Ctrl+C will free and exit */
         signal(SIGINT, sig_handler);

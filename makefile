@@ -1,7 +1,7 @@
 CC      = gcc
 CFLAGS  = -std=c99 -pthread
-SOURCES = main.c rand.c mt19937ar.c
-HEADERS = rand.h mt.h
+SOURCES = main.c rand.c mt19937ar.c eventqueue.c
+HEADERS = rand.h mt.h eventqueue.h
 FILES   = $(SOURCES) $(HEADERS)
 OUTPUT  = ./build/assignment1
 

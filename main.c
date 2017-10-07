@@ -5,6 +5,9 @@
 #include <signal.h>
 #include "rand.h"
 
+#define DEFAULT_NUM_PRODUCERS 5
+#define DEFAULT_NUM_CONSUMERS 3
+
 struct event {
         unsigned long val;
         unsigned long wait;
@@ -20,7 +23,7 @@ pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
 void sig_handler(int signal)
 {
-        perror("Terminating...");
+        perror("\nTerminating...\n");
         pthread_mutex_lock(&mutex);
         free(buffer->events);
         free(buffer);
@@ -77,12 +80,9 @@ int main(int argc, char **argv)
         /* Now that the buffer has been allocated, Ctrl+C will free and exit */
         signal(SIGINT, sig_handler);
 
-        /* 
-         * Use one producer and three consumers unless their number is specified
-         * via command line
-         */
-        int num_producers = 3;
-        int num_consumers = 3;
+        /* Use defaults unless their number is specified via command line */
+        int num_producers = DEFAULT_NUM_PRODUCERS;
+        int num_consumers = DEFAULT_NUM_CONSUMERS;
         if (argc > 2) {
                 num_producers = atoi(argv[1]);
                 num_consumers = atoi(argv[2]);
@@ -106,6 +106,7 @@ int main(int argc, char **argv)
                                NULL);
         }
 
+        /* Wait for interrupt signal */
         pause();
 
         return 0;

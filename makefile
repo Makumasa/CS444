@@ -1,4 +1,5 @@
 CC      = gcc
+CFLAGS  = -std=c99 -pthread
 SOURCES = main.c rand.c mt19937ar.c
 HEADERS = rand.h mt.h
 FILES   = $(SOURCES) $(HEADERS)

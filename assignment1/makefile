@@ -3,18 +3,21 @@ CFLAGS  = -std=c99 -pthread
 SOURCES = main.c rand.c mt19937ar.c eventqueue.c
 HEADERS = rand.h mt.h eventqueue.h
 FILES   = $(SOURCES) $(HEADERS)
-OUTPUT  = ./build/assignment1
+OUTDIR  = ./build
+OUTPUT  = $(OUTDIR)/assignment1
 
-release: $(FILES)
+create_outdir:
+	mkdir -p $(OUTDIR)
+
+release: create_outdir $(FILES)
 	$(CC) $(CFLAGS) -O2 -o $(OUTPUT) $(SOURCES)
 
-debug: $(FILES)
+debug: create_outdir $(FILES)
 	$(CC) $(CFLAGS) -g -Wall -o $(OUTPUT) $(SOURCES)
 
-clean:
-	rm $(OUTPUT)
+clean: create_outdir
+	rm -rf $(OUTPUT)
 
 rebuild_release: clean release
 
 rebuild_debug: clean debug
-

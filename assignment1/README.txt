@@ -1,4 +1,4 @@
-"make" or "make release" will compile the program (assignment1) and store it in
+"make release" will compile the program (assignment1) and store it in
 the "build" subdirectory. 
 
 "make debug" will compile the program with debug symbols and all warnings.

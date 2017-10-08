@@ -10,14 +10,14 @@
 #define DEFAULT_NUM_PRODUCERS 5
 #define DEFAULT_NUM_CONSUMERS 3
 
-pthread_mutex_t buffer_mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t print_mutex  = PTHREAD_MUTEX_INITIALIZER;
 struct event_queue *buffer;
 
 void sig_handler(int signal)
 {
         perror("\nTerminating...\n");
-        pthread_mutex_lock(&buffer_mutex);
+        pthread_mutex_lock(&mutex);
         delete_queue(buffer);
         exit(0);
 }
@@ -28,16 +28,14 @@ void *producer(void *dummy)
                 struct event e;
                 e.val = rand_uint();
                 e.wait = rand_uint_inclusive(2, 9);
-                pthread_mutex_lock(&buffer_mutex);
+                pthread_mutex_lock(&mutex);
                 if (!is_full(buffer)) {
                         enqueue(buffer, e);
-                        pthread_mutex_unlock(&buffer_mutex);
-                        pthread_mutex_lock(&print_mutex);
                         printf("Added event %lu to buffer.\n", e.val);
-                        pthread_mutex_unlock(&print_mutex);
+                        pthread_mutex_unlock(&mutex);
                         sleep(rand_uint_inclusive(3, 7));
                 } else {
-                        pthread_mutex_unlock(&buffer_mutex);
+                        pthread_mutex_unlock(&mutex);
                         sleep(1);
                 }
         }
@@ -46,16 +44,14 @@ void *producer(void *dummy)
 void *consumer(void *dummy)
 {
         while (1) {
-                pthread_mutex_lock(&buffer_mutex);
+                pthread_mutex_lock(&mutex);
                 if (!is_empty(buffer)) {
                         struct event e = dequeue(buffer);
-                        pthread_mutex_unlock(&buffer_mutex);
                         sleep(e.wait);
-                        pthread_mutex_lock(&print_mutex);
                         printf("Consumed event %lu.\n", e.val);
-                        pthread_mutex_unlock(&print_mutex);
+                        pthread_mutex_unlock(&mutex);
                 } else {
-                        pthread_mutex_unlock(&buffer_mutex);
+                        pthread_mutex_unlock(&mutex);
                         sleep(1);
                 }
         }

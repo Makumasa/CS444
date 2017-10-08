@@ -305,3 +305,4 @@ __pycache__/
 OpenCover/
 
 build/
+*.tlog

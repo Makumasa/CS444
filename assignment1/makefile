@@ -6,9 +6,6 @@ FILES   = $(SOURCES) $(HEADERS)
 OUTDIR  = ./build
 OUTPUT  = $(OUTDIR)/assignment1
 
-create_outdir:
-	mkdir -p $(OUTDIR)
-
 release: create_outdir $(FILES)
 	$(CC) $(CFLAGS) -O2 -o $(OUTPUT) $(SOURCES)
 
@@ -21,3 +18,6 @@ clean: create_outdir
 rebuild_release: clean release
 
 rebuild_debug: clean debug
+
+create_outdir:
+	mkdir -p $(OUTDIR)

@@ -89,7 +89,7 @@
     <SourcesToCopyRemotelyOverride>@(SourcesToCopyRemotely);README.txt</SourcesToCopyRemotelyOverride>
     <RemoteCleanCommandLine>cd $(RemoteRootDir);ls;make clean</RemoteCleanCommandLine>
     <RemoteBuildOutputs>$(RemoteRootDir)/$(OutDir)/assignment1</RemoteBuildOutputs>
-    <RemoteBuildCommandLine>cd $(RemoteRootDir);ls;make release</RemoteBuildCommandLine>
+    <RemoteBuildCommandLine>cd $(RemoteRootDir);ls;make</RemoteBuildCommandLine>
     <RemoteReBuildCommandLine>cd $(RemoteRootDir);ls;make rebuild_release</RemoteReBuildCommandLine>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -109,7 +109,7 @@
     <SourcesToCopyRemotelyOverride>@(SourcesToCopyRemotely);README.txt</SourcesToCopyRemotelyOverride>
     <RemoteCleanCommandLine>cd $(RemoteRootDir);ls;make clean</RemoteCleanCommandLine>
     <RemoteBuildOutputs>$(RemoteRootDir)/$(OutDir)/assignment1</RemoteBuildOutputs>
-    <RemoteBuildCommandLine>cd $(RemoteRootDir);ls;make release</RemoteBuildCommandLine>
+    <RemoteBuildCommandLine>cd $(RemoteRootDir);ls;make</RemoteBuildCommandLine>
     <RemoteReBuildCommandLine>cd $(RemoteRootDir);ls;make rebuild_release</RemoteReBuildCommandLine>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
@@ -129,7 +129,7 @@
     <SourcesToCopyRemotelyOverride>@(SourcesToCopyRemotely);README.txt</SourcesToCopyRemotelyOverride>
     <RemoteCleanCommandLine>cd $(RemoteRootDir);ls;make clean</RemoteCleanCommandLine>
     <RemoteBuildOutputs>$(RemoteRootDir)/$(OutDir)/assignment1</RemoteBuildOutputs>
-    <RemoteBuildCommandLine>cd $(RemoteRootDir);ls;make release</RemoteBuildCommandLine>
+    <RemoteBuildCommandLine>cd $(RemoteRootDir);ls;make</RemoteBuildCommandLine>
     <RemoteReBuildCommandLine>cd $(RemoteRootDir);ls;make rebuild_release</RemoteReBuildCommandLine>
   </PropertyGroup>
   <ItemGroup>

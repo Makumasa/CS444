@@ -77,60 +77,60 @@
     <IntDir>$(OutDir)</IntDir>
     <RemoteProjectDir>$(RemoteRootDir)</RemoteProjectDir>
     <SourcesToCopyRemotelyOverride>@(SourcesToCopyRemotely);README.txt</SourcesToCopyRemotelyOverride>
-    <RemoteCleanCommandLine>cd ~/CS444/assignment1;ls;make clean</RemoteCleanCommandLine>
-    <RemoteBuildOutputs>/nfs/stak/users/berezam/CS444/assignment1/build/assignment1</RemoteBuildOutputs>
-    <RemoteBuildCommandLine>cd ~/CS444/assignment1;ls;make debug</RemoteBuildCommandLine>
-    <RemoteReBuildCommandLine>cd ~/CS444/assignment1;ls;make rebuild_debug</RemoteReBuildCommandLine>
+    <RemoteCleanCommandLine>cd $(RemoteRootDir);ls;make clean</RemoteCleanCommandLine>
+    <RemoteBuildOutputs>$(RemoteRootDir)/$(OutDir)/assignment1</RemoteBuildOutputs>
+    <RemoteBuildCommandLine>cd $(RemoteRootDir);ls;make debug</RemoteBuildCommandLine>
+    <RemoteReBuildCommandLine>cd $(RemoteRootDir);ls;make rebuild_debug</RemoteReBuildCommandLine>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
     <OutDir>build</OutDir>
     <IntDir>$(OutDir)</IntDir>
     <RemoteProjectDir>$(RemoteRootDir)</RemoteProjectDir>
     <SourcesToCopyRemotelyOverride>@(SourcesToCopyRemotely);README.txt</SourcesToCopyRemotelyOverride>
-    <RemoteCleanCommandLine>cd ~/CS444/assignment1;ls;make clean</RemoteCleanCommandLine>
-    <RemoteBuildOutputs>/nfs/stak/users/berezam/CS444/assignment1/build/assignment1</RemoteBuildOutputs>
-    <RemoteBuildCommandLine>cd ~/CS444/assignment1;ls;make release</RemoteBuildCommandLine>
-    <RemoteReBuildCommandLine>cd ~/CS444/assignment1;ls;make rebuild_release</RemoteReBuildCommandLine>
+    <RemoteCleanCommandLine>cd $(RemoteRootDir);ls;make clean</RemoteCleanCommandLine>
+    <RemoteBuildOutputs>$(RemoteRootDir)/$(OutDir)/assignment1</RemoteBuildOutputs>
+    <RemoteBuildCommandLine>cd $(RemoteRootDir);ls;make release</RemoteBuildCommandLine>
+    <RemoteReBuildCommandLine>cd $(RemoteRootDir);ls;make rebuild_release</RemoteReBuildCommandLine>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>build</OutDir>
     <IntDir>$(OutDir)</IntDir>
     <RemoteProjectDir>$(RemoteRootDir)</RemoteProjectDir>
     <SourcesToCopyRemotelyOverride>@(SourcesToCopyRemotely);README.txt</SourcesToCopyRemotelyOverride>
-    <RemoteCleanCommandLine>cd ~/CS444/assignment1;ls;make clean</RemoteCleanCommandLine>
-    <RemoteBuildOutputs>/nfs/stak/users/berezam/CS444/assignment1/build/assignment1</RemoteBuildOutputs>
-    <RemoteBuildCommandLine>cd ~/CS444/assignment1;ls;make debug</RemoteBuildCommandLine>
-    <RemoteReBuildCommandLine>cd ~/CS444/assignment1;ls;make rebuild_debug</RemoteReBuildCommandLine>
+    <RemoteCleanCommandLine>cd $(RemoteRootDir);ls;make clean</RemoteCleanCommandLine>
+    <RemoteBuildOutputs>$(RemoteRootDir)/$(OutDir)/assignment1</RemoteBuildOutputs>
+    <RemoteBuildCommandLine>cd $(RemoteRootDir);ls;make debug</RemoteBuildCommandLine>
+    <RemoteReBuildCommandLine>cd $(RemoteRootDir);ls;make rebuild_debug</RemoteReBuildCommandLine>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>build</OutDir>
     <IntDir>$(OutDir)</IntDir>
     <RemoteProjectDir>$(RemoteRootDir)</RemoteProjectDir>
     <SourcesToCopyRemotelyOverride>@(SourcesToCopyRemotely);README.txt</SourcesToCopyRemotelyOverride>
-    <RemoteCleanCommandLine>cd ~/CS444/assignment1;ls;make clean</RemoteCleanCommandLine>
-    <RemoteBuildOutputs>/nfs/stak/users/berezam/CS444/assignment1/build/assignment1</RemoteBuildOutputs>
-    <RemoteBuildCommandLine>cd ~/CS444/assignment1;ls;make release</RemoteBuildCommandLine>
-    <RemoteReBuildCommandLine>cd ~/CS444/assignment1;ls;make rebuild_release</RemoteReBuildCommandLine>
+    <RemoteCleanCommandLine>cd $(RemoteRootDir);ls;make clean</RemoteCleanCommandLine>
+    <RemoteBuildOutputs>$(RemoteRootDir)/$(OutDir)/assignment1</RemoteBuildOutputs>
+    <RemoteBuildCommandLine>cd $(RemoteRootDir);ls;make release</RemoteBuildCommandLine>
+    <RemoteReBuildCommandLine>cd $(RemoteRootDir);ls;make rebuild_release</RemoteReBuildCommandLine>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
     <OutDir>build</OutDir>
     <IntDir>$(OutDir)</IntDir>
     <RemoteProjectDir>$(RemoteRootDir)</RemoteProjectDir>
     <SourcesToCopyRemotelyOverride>@(SourcesToCopyRemotely);README.txt</SourcesToCopyRemotelyOverride>
-    <RemoteCleanCommandLine>cd ~/CS444/assignment1;ls;make clean</RemoteCleanCommandLine>
-    <RemoteBuildOutputs>/nfs/stak/users/berezam/CS444/assignment1/build/assignment1</RemoteBuildOutputs>
-    <RemoteBuildCommandLine>cd ~/CS444/assignment1;ls;make debug</RemoteBuildCommandLine>
-    <RemoteReBuildCommandLine>cd ~/CS444/assignment1;ls;make rebuild_debug</RemoteReBuildCommandLine>
+    <RemoteCleanCommandLine>cd $(RemoteRootDir);ls;make clean</RemoteCleanCommandLine>
+    <RemoteBuildOutputs>$(RemoteRootDir)/$(OutDir)/assignment1</RemoteBuildOutputs>
+    <RemoteBuildCommandLine>cd $(RemoteRootDir);ls;make debug</RemoteBuildCommandLine>
+    <RemoteReBuildCommandLine>cd $(RemoteRootDir);ls;make rebuild_debug</RemoteReBuildCommandLine>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
     <OutDir>build</OutDir>
     <IntDir>$(OutDir)</IntDir>
     <RemoteProjectDir>$(RemoteRootDir)</RemoteProjectDir>
     <SourcesToCopyRemotelyOverride>@(SourcesToCopyRemotely);README.txt</SourcesToCopyRemotelyOverride>
-    <RemoteCleanCommandLine>cd ~/CS444/assignment1;ls;make clean</RemoteCleanCommandLine>
-    <RemoteBuildOutputs>/nfs/stak/users/berezam/CS444/assignment1/build/assignment1</RemoteBuildOutputs>
-    <RemoteBuildCommandLine>cd ~/CS444/assignment1;ls;make release</RemoteBuildCommandLine>
-    <RemoteReBuildCommandLine>cd ~/CS444/assignment1;ls;make rebuild_release</RemoteReBuildCommandLine>
+    <RemoteCleanCommandLine>cd $(RemoteRootDir);ls;make clean</RemoteCleanCommandLine>
+    <RemoteBuildOutputs>$(RemoteRootDir)/$(OutDir)/assignment1</RemoteBuildOutputs>
+    <RemoteBuildCommandLine>cd $(RemoteRootDir);ls;make release</RemoteBuildCommandLine>
+    <RemoteReBuildCommandLine>cd $(RemoteRootDir);ls;make rebuild_release</RemoteReBuildCommandLine>
   </PropertyGroup>
   <ItemGroup>
     <ClCompile Include="eventqueue.c" />

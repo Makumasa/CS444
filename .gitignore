@@ -306,3 +306,5 @@ OpenCover/
 
 build/
 *.tlog
+*.docx
+*.tar.bz2

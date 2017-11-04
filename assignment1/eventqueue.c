@@ -41,7 +41,8 @@ void enqueue(struct event_queue *queue, struct event item)
         (queue->size)++;
 }
 
-struct event dequeue(struct event_queue *queue) {
+struct event dequeue(struct event_queue *queue) 
+{
         struct event e = queue->events[queue->front];
 
         if (queue->front < (queue->capacity - 1))

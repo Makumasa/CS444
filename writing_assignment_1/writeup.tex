@@ -89,7 +89,7 @@ In Windows, although the high-level implementation of processes and threads is f
 \item Scheduling/execution of the initial thread
 \end{enumerate}
 
-Below is some example code illustrating a call CreateProcess():
+Below is some example code illustrating a call to CreateProcess():
 \input{__createprocess.c.tex}
 As you can see, despite the fact that CreateProcess() is the highest level API call for the purpose of process creation in Windows, it still allows for a multitude of input parameters. This makes sense when you consider that Windows processes, unlike those of Linux and FreeBSD, inherit very little from their parent and are mostly constructed from scratch.
 

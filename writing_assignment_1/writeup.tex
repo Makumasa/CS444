@@ -71,7 +71,8 @@ D. Kevin \textsc{McGrath}
   
 \tableofcontents
 \newpage
-
+\renewcommand{\baselinestretch}{1.0}
+\linespread{1.0}
 \section{Introduction}
 Since the modern personal computer has become an all-purpose computation tool, it is critical that it is able to run multiple programs simultaneously (either concurrently through the use of multiple cores or with the illusion of concurrency accomplished through a combination of time sharing and scheduling). As a result, operating systems have been created and improved upon primarily to address this challenge - the creation, destruction, resource management, and scheduling of multiple executing programs, or processes. While support for these basic responsibilities is ubiquitous in most modern operating systems, the actual implementation of concepts such as processes, threads, and CPU scheduling can vary greatly from OS to OS. This paper in particular will look at how FreeBSD's and Windows' implementations of these concepts compare to Linux.
 \section{Processes and Threads}
@@ -127,6 +128,7 @@ Despite these slight implementation details, all three systems approach the issu
 
 \section{Conclusion}
 In conclusion, although FreeBSD, Windows, and Linux, being operating systems, must all implement processes and scheduling in one way or another to accomplish the end goal of concurrency (perceived or otherwise), the details of said implementations vary greatly as a result of the history of these systems, the accessibility of their source code, and the hardware platforms they aim to run on.
+\newpage
 \bibliographystyle{IEEEtran}
 \bibliography{mybib}
 

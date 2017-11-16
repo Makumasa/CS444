@@ -1,0 +1,91 @@
+\documentclass[onecolumn, draftclsnofoot,10pt, compsoc]{IEEEtran}
+
+\usepackage{graphicx}                                        
+\usepackage{amssymb}                                         
+\usepackage{amsmath}                                         
+\usepackage{amsthm}                                          
+\usepackage{alltt}                                           
+\usepackage{float}
+\usepackage{color}
+\usepackage{url}
+\usepackage{balance}
+\usepackage[TABBOTCAP, tight]{subfigure}
+\usepackage{enumitem}
+\usepackage{pstricks, pst-node}
+\usepackage[T1]{fontenc}
+\graphicspath{{images/}}
+\usepackage{caption}
+
+\usepackage{geometry}
+\geometry{letterpaper, margin=0.75in}
+
+\newcommand{\cred}[1]{{\color{red}#1}}
+\newcommand{\cblue}[1]{{\color{blue}#1}}
+\newcommand{\toc}{\tableofcontents}
+\newlength{\drop}
+
+\def\name{Mark Bereza}
+
+\input{pygments.tex}
+
+\parindent = 0.0 in
+\parskip = 0.1 in
+
+\begin{document}
+
+\begin{titlepage}
+\begin{center}
+
+\vspace*{50mm}
+
+\textsc{\LARGE CS444: Operating Systems II}\\[1.5cm]
+
+\hrule
+\vspace{5mm}
+{ \huge \bfseries I/O and Cryptography \\[0.9cm] }
+\hrule 
+\vspace{5mm}
+
+\noindent
+\begin{minipage}{0.4\textwidth}
+
+\begin{flushleft} \large
+\emph{Author:}\\
+Mark \textsc{Bereza}
+\end{flushleft}
+\end{minipage}%
+\begin{minipage}{0.4\textwidth}
+\begin{flushright} \large
+\emph{Instructor:} \\
+D. Kevin \textsc{McGrath}
+\end{flushright}
+
+\end{minipage}
+
+\vspace*{\fill}
+{\large \today}\\
+{\large Fall Term}
+
+\end{center}
+\end{titlepage}
+  
+\tableofcontents
+\newpage
+\renewcommand{\baselinestretch}{1.0}
+\linespread{1.0}
+\section{Introduction}
+Since modern computers are ridden with various I/O devices, it is critical that any modern operating system provides a way to interface with these devices by reading data from them or writing data to them. In particular, it common to create an common interface between user applications and the drivers for the I/O devices in question so that programs can access data from I/O devices without needing to know anything about how reading or writing is handled for that particular device. Furthermore, the kernel may provide developers with various built-in data structures and algorithms to aid in faciliation of these services. Finally, many modern operating systems have begun to support cryptographic services for I/O operations to allow users to secure their data by performing encryption before writing and performing a corresponding decryption before reading. This paper will analyze how FreeBSD and Windows implement these various services and compare them to their corresponding Linux implementations and attempt to justify any differences.
+\section{I/O Abstraction}
+Devices on hardware I/O busses are referenced in the kernel by their I/O ports, which simply serve as numerical IDs. The Linux kernel provides auxiliary functions to simplify accessing I/O ports for reading and writing \cite{LinuxKernel}. The kernel keeps track of the mapping between specific I/O devices and I/O ports through structures called resources \cite{LinuxKernel}. These structures contain a range of I/O port addresses and are organized into a tree-like structure to facilitate devices that are split into subsections. Like most things in Linux, I/O devices are represented as files (called device files) that usually live in /dev/. The advantage here is that the same system calls used to interact with regular files (read and write) can also be used to access I/O devices. In order to make these generic system calls provide the specific functionality in the device, the Linux kernel employs a Virtual File System (VFS). The VFS serves as the middleman between user file operations and the device drivers; it converts system calls into the appropriate device functions \cite{LinuxKernel}.
+
+FreeBSD, being also UNIX-based, is similar in many ways. FreeBSD also does not distinguish much between regular files and I/O device files (called special files in FreeBSD) at the user level. In fact, all I/O devices are abstracted to function as a simple stream of bytes, also known as an I/O stream. I/O streams are referenced using descriptors and these descriptors are also used to refer to everything from files, pipes, sockets, cryptographic hardware, shared memory, and more \cite{FreeBSD}. Like Linux, these special files can be accessed using the read/write system calls used to access conventional files. Unlike Linux, where the files point directly to I/O devices, all files in FreeBSD (both regular and special) point first to vnodes, which is part of FreeBSD's virtualaziation of its file system. Vnodes are used to describe various file system implementations in a generic way. That being said, Linux has its own version of vnodes known as generic inodes so there differences here are minimal.
+
+Windows utilizes a service known as the I/O manager to serve as the glue between user applications, kernel services, and device drivers. This manager defines the model for I/O requests that are delivered to device drivers in a Windows system \cite{WindowsInternals2}. The specific model used by the manager is an object called an I/O request packet, or IRP, which completely describes the I/O request \cite{WindowsInternals2}. The I/O manager constructs these packets for each I/O operation and passes them to device drivers which then perform the requested I/O operations. The drivers then pass back the IRPs to the I/O manager, which will dispose of the them if it determines that the request has been completed. Moreover, the I/O manager exports common functionality to drivers, such as access to other drivers, I/O request buffers, timeouts, and filesystem data reporting to simplify driver development. This relationship between drivers and the kernel is quite different than Linux's, and is likely a result of Windows outsourcing driver development to device manufacturers using the Windows Driver Model (WDM), whereas the Linux kernel is distributed with the drivers included. This difference itself is a clear result of Windows being a closed-source microkernel, while Linux employs an open-source monolithic kernel. 
+
+Windows threads perform their I/O operations on virtual files in a fashinon very similar to how Linux and FreeBSD treat I/O devices as files. This similarity is likely a consequence of the developers of all three systems seeking to employ abstraction to simplify things for users and developers. That is, because applications either do not want to worry about or simply cannot know ahead of time the features of I/O hardware devices, a common abstract model for data reading/writing is instead provided, and that model is the file. That being said, Windows does not take the "devices are files" analogy as far as Linux does. For example, Windows does not map devices to a path in the filesystem.
+\section{Types of I/O Devices}
+\newpage
+\bibliographystyle{IEEEtran}
+\bibliography{mybib}
+
+\end{document}

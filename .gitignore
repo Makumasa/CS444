@@ -308,3 +308,12 @@ build/
 *.tlog
 *.docx
 *.tar.bz2
+/misc/pull
+/misc/push
+/misc/qdb
+/Understanding The Linux Kernel 3rd Edition.pdf
+/Windows Internals Part 1 (6th Edition).pdf
+/Windows Internals Part 2 (6th Edition).pdf
+/The Design and Implementation of the FreeBSD Operating System (2nd Edition).pdf
+/misc/gdb_commands
+/concurrency_assignment_3/problem1

@@ -18,7 +18,7 @@ sem_t s;
 pthread_mutex_t value_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 void sig_handler(int signal) {
-    perror("\nTerminating...\n");
+    printf("\nTerminating...\n");
     exit(0);
 }
 
@@ -26,9 +26,8 @@ void* foo(void* tid) {
     int id = *((int*)tid);
     while (1) {
         while (1) {
-            if (!locked) {
-                pthread_mutex_lock(&value_mutex);
-                sem_wait(&s);
+            pthread_mutex_lock(&value_mutex);
+            if (!locked && (sem_trywait(&s) == 0)) {
                 break;
             }
             pthread_mutex_unlock(&value_mutex);
@@ -43,7 +42,7 @@ void* foo(void* tid) {
         if (value) {
             pthread_mutex_unlock(&value_mutex);
             resource = genrand64_int64();
-            sleep(genrand64_int64() % 5);
+            sleep(genrand64_int64() % 3);
             pthread_mutex_lock(&value_mutex);
             sem_post(&s);
             sem_getvalue(&s, &value);
@@ -55,7 +54,7 @@ void* foo(void* tid) {
             printf("thread %d locked the resource\n", id);
             pthread_mutex_unlock(&value_mutex);
             resource = genrand64_int64();
-            sleep(genrand64_int64() % 5);
+            sleep(genrand64_int64() % 3);
             pthread_mutex_lock(&value_mutex);
             sem_post(&s);
             sem_getvalue(&s, &value);

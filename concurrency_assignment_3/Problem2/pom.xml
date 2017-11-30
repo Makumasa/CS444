@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>os2.group40</groupId>
+    <artifactId>Concurrency3</artifactId>
+    <version>1.0</version>
+    <packaging>jar</packaging>
+
+    <name>Concurrency Assignment 3: Read/Insert/Delete Locking</name>
+    <description>An implementation of mutual exclusion which maintains Read, Insert, and Delete locks.</description>
+    <inceptionYear>2017</inceptionYear>
+    <licenses>
+        <license>
+            <name>LGPLv3</name>
+            <url>https://www.gnu.org/copyleft/lesser.html</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <id>patcht</id>
+            <name>Morgan Patch</name>
+            <email>patcht@oregonstate.edu</email>
+        </developer>
+        <developer>
+            <id>berezam</id>
+            <name>Mark Bereza</name>
+            <email>berezam@oregonstate.edu</email>
+        </developer>
+    </developers>
+
+    <properties>
+        <source.version>1.8</source.version>
+        <target.version>1.8</target.version>
+
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.1</version>
+                <configuration>
+                    <source>${source.version}</source>
+                    <target>${target.version}</target>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.0.2</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>os2.group40.concurrency3.ProblemTwo</mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+        </plugins>
+
+        <resources>
+            <resource>
+                <directory>${basedir}/src/main/resources</directory>
+            </resource>
+            <resource>
+                <directory>${basedir}/src/main/java</directory>
+            </resource>
+        </resources>
+    </build>
+</project>

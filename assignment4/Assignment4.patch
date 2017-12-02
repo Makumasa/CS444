@@ -1,0 +1,443 @@
+From 5ced79014cf736fffea03220227de959835315a2 Mon Sep 17 00:00:00 2001
+From: Morgan Patch <me@lyonesgamer.com>
+Date: Fri, 1 Dec 2017 20:33:56 -0800
+Subject: [PATCH] Apply changes.
+
+---
+ arch/x86/syscalls/syscall_32.tbl |   2 +
+ include/linux/syscalls.h         |   3 +
+ init/Kconfig                     |  25 ++++
+ mm/slob.c                        | 295 ++++++++++++++++++++++++++++++++++++++-
+ 4 files changed, 323 insertions(+), 2 deletions(-)
+
+diff --git a/arch/x86/syscalls/syscall_32.tbl b/arch/x86/syscalls/syscall_32.tbl
+index b3560ec..7bb0ad3 100644
+--- a/arch/x86/syscalls/syscall_32.tbl
++++ b/arch/x86/syscalls/syscall_32.tbl
+@@ -365,3 +365,5 @@
+ 356	i386	memfd_create		sys_memfd_create
+ 357	i386	bpf			sys_bpf
+ 358	i386	execveat		sys_execveat			stub32_execveat
++359     i386    mem_size                sys_mem_size
++360     i386    mem_used                sys_mem_used
+diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
+index 85893d7..50af07b 100644
+--- a/include/linux/syscalls.h
++++ b/include/linux/syscalls.h
+@@ -882,4 +882,7 @@ asmlinkage long sys_execveat(int dfd, const char __user *filename,
+ 			const char __user *const __user *argv,
+ 			const char __user *const __user *envp, int flags);
+ 
++asmlinkage long sys_mem_size(void);
++asmlinkage long sys_mem_used(void);
++
+ #endif
+diff --git a/init/Kconfig b/init/Kconfig
+index 9afb971..3d84f8d 100644
+--- a/init/Kconfig
++++ b/init/Kconfig
+@@ -1697,6 +1697,31 @@ config SLOB
+ 
+ endchoice
+ 
++config SLOB_BEST_FIT
++        bool "Use SLOB best-fit"
++        default y
++        depends on SLOB
++        help
++          Use the best-fit algorithm we developed for this class, which will
++          decrease internal fragmentation at the cost of some performance.
++          Turning off will use the first-fit algorithm provided with the Linux
++          kernel.
++		  
++config SLOB_PRINT
++        bool "Print SLOB memory information"
++        default n
++        depends on SLOB
++        help
++          Prints kernel messages regarding SLOB memory allcation information.
++		  
++config PRINT_BEST_FIT
++        bool "Print SLOB best-fit searches"
++        default y
++        depends on SLOB_BEST_FIT
++        help
++          Prints best fit searches of lengths between 13 and 15 to verify that
++		  the best-fit algorithm is functioning correctly.
++
+ config SLUB_CPU_PARTIAL
+ 	default y
+ 	depends on SLUB && SMP
+diff --git a/mm/slob.c b/mm/slob.c
+index 96a8620..afdd8f9 100644
+--- a/mm/slob.c
++++ b/mm/slob.c
+@@ -72,7 +72,12 @@
+ 
+ #include <linux/atomic.h>
+ 
++#include <linux/syscalls.h>
++
+ #include "slab.h"
++#define SLOB_PRINT_LOWER_THRESHOLD 13
++#define SLOB_PRINT_UPPER_THRESHOLD 15
++
+ /*
+  * slob_block has a field 'units', which indicates size of block if +ve,
+  * or offset of next block if -ve (in SLOB_UNITs).
+@@ -101,6 +106,9 @@ static LIST_HEAD(free_slob_small);
+ static LIST_HEAD(free_slob_medium);
+ static LIST_HEAD(free_slob_large);
+ 
++unsigned long mem_size = 0;
++unsigned long mem_used = 0;
++
+ /*
+  * slob_page_free: true for pages on free_slob_pages list.
+  */
+@@ -201,6 +209,7 @@ static void *slob_new_pages(gfp_t gfp, int order, int node)
+ 	if (!page)
+ 		return NULL;
+ 
++        mem_size += PAGE_SIZE;
+ 	return page_address(page);
+ }
+ 
+@@ -208,6 +217,7 @@ static void slob_free_pages(void *b, int order)
+ {
+ 	if (current->reclaim_state)
+ 		current->reclaim_state->reclaimed_slab += 1 << order;
++        mem_size -= PAGE_SIZE;
+ 	free_pages((unsigned long)b, order);
+ }
+ 
+@@ -255,6 +265,8 @@ static void *slob_page_alloc(struct page *sp, size_t size, int align)
+ 			sp->units -= units;
+ 			if (!sp->units)
+ 				clear_slob_page_free(sp);
++
++                        mem_used += units;
+ 			return cur;
+ 		}
+ 		if (slob_last(cur))
+@@ -262,11 +274,277 @@ static void *slob_page_alloc(struct page *sp, size_t size, int align)
+ 	}
+ }
+ 
++SYSCALL_DEFINE0(mem_size) {
++        return mem_size;
++}
++
++SYSCALL_DEFINE0(mem_used) {
++        return mem_used;
++}
++
++#ifdef CONFIG_SLOB_PRINT
++static void print_meminfo(int start) {
++	struct sysinfo info;
++	pg_data_t *node;
++	struct zone *zone;
++	struct zone *node_zones;
++
++	if (start)
++		printk(KERN_NOTICE "SLOB: Starting allocation.");
++	else
++		printk(KERN_NOTICE "SLOB: Allocation finished.");
++
++	si_meminfo(&info);
++	printk(KERN_NOTICE "SLOB: Available memory: %lu\n", info.freeram);
++
++	printk(KERN_NOTICE "SLOB: Memory fragmentation:\n");
++	node = first_online_pgdat();
++	node_zones = node->node_zones;
++	for (zone = node_zones; zone - node_zones < MAX_NR_ZONES; zone++) {
++		int order;
++		unsigned long flags;
++
++		if (!populated_zone(zone))
++			continue;
++
++		spin_lock_irqsave(&zone->lock, flags);
++		printk(KERN_NOTICE "SLOB: Node %d, zone %8s ", node->node_id, zone->name);
++		for (order = 0; order < MAX_ORDER; ++order)
++			printk("%4lu ", zone->free_area[order].nr_free);
++		printk("\n");
++		spin_unlock_irqrestore(&zone->lock, flags);
++	}
++}
++#endif
++
++#ifdef CONFIG_SLOB_BEST_FIT
++static void *slob_direct_alloc(struct page *sp,
++			       slob_t *block,
++			       slob_t *prev,
++			       size_t size,
++			       int align)
++{
++	slob_t *next, *aligned = NULL;
++	int delta = 0, units = SLOB_UNITS(size);
++	slobidx_t avail = slob_units(block);
++
++	if (align) {
++		aligned = (slob_t *)ALIGN((unsigned long)block, align);
++		delta = aligned - block;
++	}
++
++	if (delta) { /* need to fragment head to align? */
++		next = slob_next(block);
++		set_slob(aligned, avail - delta, next);
++		set_slob(block, delta, aligned);
++		prev = block;
++		block = aligned;
++		avail = slob_units(block);
++	}
++
++	next = slob_next(block);
++	if (avail == units) { /* exact fit? unlink. */
++		if (prev)
++			set_slob(prev, slob_units(prev), next);
++		else
++			sp->freelist = next;
++	} else { /* fragment */
++		if (prev)
++			set_slob(prev, slob_units(prev), block + units);
++		else
++			sp->freelist = block + units;
++		set_slob(block + units, avail - units, next);
++	}
++
++	sp->units -= units;
++	mem_used += units;
++	if (!sp->units)
++		clear_slob_page_free(sp);
++	return block;
++}
++
++/*
++ * See if any of the slobs in a page are better than the current best.
++ * If a slob is found of the exact size, return 1. Otherwise, return 0.
++ */
++#ifdef CONFIG_PRINT_BEST_FIT
++static int slob_update_best(struct page *sp,
++			    size_t size,
++			    int align,
++			    struct page **best_page,
++			    slob_t **best_idx,
++			    slob_t **best_idx_prev,
++			    size_t *best_delta,
++			    int *best_ctr,
++			    slobidx_t avails[SLOB_PRINT_UPPER_THRESHOLD],
++			    size_t deltas[SLOB_PRINT_UPPER_THRESHOLD])
++{
++#else
++static int slob_update_best(struct page *sp,
++			    size_t size,
++			    int align,
++			    struct page **best_page,
++			    slob_t **best_idx,
++			    slob_t **best_idx_prev,
++			    size_t *best_delta)
++{
++#endif
++	slob_t *prev, *cur, *aligned = NULL;
++	int delta = 0, units = SLOB_UNITS(size), ret = 0;
++
++	for (prev = NULL, cur = sp->freelist; ;
++	     prev = cur, cur = slob_next(cur)) {
++		slobidx_t avail = slob_units(cur);
++		int real_size = 0;
++
++		if (align) {
++			aligned = (slob_t *)ALIGN((unsigned long)cur, align);
++			delta = aligned - cur;
++		}
++
++		real_size = units + delta;
++
++		if ((avail >= real_size) &&
++		    ((*best_page == NULL) ||
++		     ((avail - real_size) < *best_delta))) {
++			*best_page     = sp;
++			*best_idx      = cur;
++			*best_idx_prev = prev;
++			*best_delta    = avail - real_size;
++#ifdef CONFIG_PRINT_BEST_FIT
++			if (*best_ctr < SLOB_PRINT_UPPER_THRESHOLD) {
++				avails[(*best_ctr)] = avail;
++				deltas[(*best_ctr)] = *best_delta;
++			}
++			if (*best_ctr < 100)
++				(*best_ctr)++;
++#endif
++			if (*best_delta == 0) {
++				ret = 1;
++				break;
++			}
++		}
++		if (slob_last(cur))
++			break;
++	}
++
++	return ret;
++}
++
+ /*
+  * slob_alloc: entry point into the slob allocator.
+  */
++#define PRINT_FREQ 8192
+ static void *slob_alloc(size_t size, gfp_t gfp, int align, int node)
+ {
++#ifdef CONFIG_PRINT_BEST_FIT
++	int i;
++	int best_ctr = 0;
++	slobidx_t avails[SLOB_PRINT_UPPER_THRESHOLD];
++	size_t deltas[SLOB_PRINT_UPPER_THRESHOLD];
++#endif
++#ifdef CONFIG_SLOB_PRINT
++	static unsigned long ctr = 0;
++#endif
++	struct page *sp, *best_page = NULL;
++	struct list_head *slob_list;
++	slob_t *b = NULL, *best_idx = NULL, *best_idx_prev = NULL;
++	unsigned long flags;
++	size_t best_delta = 0;
++
++	if (size < SLOB_BREAK1)
++		slob_list = &free_slob_small;
++	else if (size < SLOB_BREAK2)
++		slob_list = &free_slob_medium;
++	else
++		slob_list = &free_slob_large;
++#ifdef CONFIG_SLOB_PRINT
++	if (ctr & PRINT_FREQ)
++		print_meminfo(true);
++#endif
++	spin_lock_irqsave(&slob_lock, flags);
++	/* Iterate through each partially free page, try to find room */
++	list_for_each_entry(sp, slob_list, lru) {
++#ifdef CONFIG_NUMA
++		/*
++		 * If there's a node specification, search for a partial
++		 * page with a matching node id in the freelist.
++		 */
++		if (node != NUMA_NO_NODE && page_to_nid(sp) != node)
++			continue;
++#endif
++		/* Enough room on this page? */
++		if (sp->units < SLOB_UNITS(size))
++			continue;
++#ifdef CONFIG_PRINT_BEST_FIT
++		if (slob_update_best(sp, size, align, &best_page, &best_idx,
++				     &best_idx_prev, &best_delta, &best_ctr, 
++				     avails, deltas))
++			break;
++	}
++	if ((best_ctr >= SLOB_PRINT_LOWER_THRESHOLD) &&
++	    (best_ctr <= SLOB_PRINT_UPPER_THRESHOLD)) {
++		printk("SLOB: Starting search...\n");
++		for (i = 0; i < best_ctr; ++i) {
++			printk("SLOB: New best fit found:\n");
++			printk("\tSize  = %d\n", avails[i]);
++			printk("\tDelta = %d\n", deltas[i]);
++		}
++		printk("SLOB: Ending search...\n");
++#else
++		if (slob_update_best(sp, size, align, &best_page, &best_idx,
++				     &best_idx_prev, &best_delta))
++			break;
++#endif
++	}
++	if (best_page != NULL) {
++		b = slob_direct_alloc(best_page, best_idx,
++				      best_idx_prev, size, align);
++#ifdef CONFIG_SLOB_PRINT
++		if (ctr & PRINT_FREQ)
++			printk("SLOB: best delta = %d\n", best_delta);
++#endif
++		spin_unlock_irqrestore(&slob_lock, flags);
++	} else { /* Not enough space: must allocate a new page */
++#ifdef CONFIG_SLOB_PRINT
++		if (ctr & PRINT_FREQ)
++			printk("SLOB: Not enough space, allocating new page...\n");
++#endif
++		spin_unlock_irqrestore(&slob_lock, flags);
++		b = slob_new_pages(gfp & ~__GFP_ZERO, 0, node);
++		if (!b)
++			return NULL;
++		sp = virt_to_page(b);
++		__SetPageSlab(sp);
++		spin_lock_irqsave(&slob_lock, flags);
++		sp->units = SLOB_UNITS(PAGE_SIZE);
++		sp->freelist = b;
++		INIT_LIST_HEAD(&sp->lru);
++		set_slob(b, SLOB_UNITS(PAGE_SIZE), b + SLOB_UNITS(PAGE_SIZE));
++		set_slob_page_free(sp, slob_list);
++		b = slob_page_alloc(sp, size, align);
++		BUG_ON(!b);
++		spin_unlock_irqrestore(&slob_lock, flags);
++	}
++	if (unlikely((gfp & __GFP_ZERO) && b))
++		memset(b, 0, size);
++#ifdef CONFIG_SLOB_PRINT
++	if (ctr & PRINT_FREQ) {
++		print_meminfo(false);
++		ctr &= (PRINT_FREQ-1);
++	}
++	ctr++;
++#endif
++	return b;
++}
++#else
++/*
++ * slob_alloc: entry point into the slob allocator.
++ */
++#define PRINT_FREQ 8192
++static void *slob_alloc(size_t size, gfp_t gfp, int align, int node)
++{
++	static unsigned long ctr = 0;
+ 	struct page *sp;
+ 	struct list_head *prev;
+ 	struct list_head *slob_list;
+@@ -279,7 +557,10 @@ static void *slob_alloc(size_t size, gfp_t gfp, int align, int node)
+ 		slob_list = &free_slob_medium;
+ 	else
+ 		slob_list = &free_slob_large;
+-
++#ifdef CONFIG_SLOB_PRINT
++	if (ctr & PRINT_FREQ)
++		print_meminfo(true);
++#endif
+ 	spin_lock_irqsave(&slob_lock, flags);
+ 	/* Iterate through each partially free page, try to find room */
+ 	list_for_each_entry(sp, slob_list, lru) {
+@@ -331,9 +612,18 @@ static void *slob_alloc(size_t size, gfp_t gfp, int align, int node)
+ 	}
+ 	if (unlikely((gfp & __GFP_ZERO) && b))
+ 		memset(b, 0, size);
++#ifdef CONFIG_SLOB_PRINT
++	if (ctr & PRINT_FREQ) {
++		printk("SLOB: requested = %d\n", size);
++		printk("SLOB: actual    = %d\n", slob_units(b));
++		print_meminfo(false);
++		ctr &= (PRINT_FREQ-1);
++	}
++	ctr++;
++#endif
+ 	return b;
+ }
+-
++#endif
+ /*
+  * slob_free: entry point into the slob allocator.
+  */
+@@ -387,6 +677,7 @@ static void slob_free(void *block, int size)
+ 	 * point.
+ 	 */
+ 	sp->units += units;
++	mem_used -= units;
+ 
+ 	if (b < (slob_t *)sp->freelist) {
+ 		if (b + units == sp->freelist) {
+-- 
+2.7.4
+
